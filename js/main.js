@@ -1,16 +1,30 @@
-let restaurants,
-  neighborhoods,
-  cuisines
-var map
-var markers = []
+var restaurants,
+    neighborhoods,
+    cuisines;
+var map;
+var markers = [];
+
 
 /**
  * Fetch neighborhoods and cuisines as soon as the page is loaded.
  */
 document.addEventListener('DOMContentLoaded', (event) => {
+  registerServiceWorker();
   fetchNeighborhoods();
   fetchCuisines();
 });
+
+/**
+ * register service worker.
+ */
+registerServiceWorker = () => {
+  if (!navigator.serviceWorker) return;
+  navigator.serviceWorker.register('/sw.js').then(registration => {
+    console.log('ServiceWorker registration successful with scope: ', registration.scope);
+  }).catch(err => {
+      console.log('ServiceWorker registration failed: ', err);
+  });
+}
 
 /**
  * Fetch all neighborhoods and set their HTML.
@@ -30,7 +44,7 @@ fetchNeighborhoods = () => {
  * Set neighborhoods HTML.
  */
 fillNeighborhoodsHTML = (neighborhoods = self.neighborhoods) => {
-  const select = document.getElementById('neighborhoods-select');
+  const select = document.getElementsByClassName('neighborhoods-select')[0];
   neighborhoods.forEach(neighborhood => {
     const option = document.createElement('option');
     option.innerHTML = neighborhood;
@@ -57,7 +71,7 @@ fetchCuisines = () => {
  * Set cuisines HTML.
  */
 fillCuisinesHTML = (cuisines = self.cuisines) => {
-  const select = document.getElementById('cuisines-select');
+  const select = document.getElementsByClassName('cuisines-select')[0];
 
   cuisines.forEach(cuisine => {
     const option = document.createElement('option');
@@ -75,7 +89,7 @@ window.initMap = () => {
     lat: 40.722216,
     lng: -73.987501
   };
-  self.map = new google.maps.Map(document.getElementById('map'), {
+  self.map = new google.maps.Map(document.getElementsByClassName('map')[0], {
     zoom: 12,
     center: loc,
     scrollwheel: false
@@ -87,8 +101,8 @@ window.initMap = () => {
  * Update page and map for current restaurants.
  */
 updateRestaurants = () => {
-  const cSelect = document.getElementById('cuisines-select');
-  const nSelect = document.getElementById('neighborhoods-select');
+  const cSelect = document.getElementsByClassName('cuisines-select')[0];
+  const nSelect = document.getElementsByClassName('neighborhoods-select')[0];
 
   const cIndex = cSelect.selectedIndex;
   const nIndex = nSelect.selectedIndex;
@@ -112,7 +126,7 @@ updateRestaurants = () => {
 resetRestaurants = (restaurants) => {
   // Remove all restaurants
   self.restaurants = [];
-  const ul = document.getElementById('restaurants-list');
+  const ul = document.getElementsByClassName('restaurants-list')[0];
   ul.innerHTML = '';
 
   // Remove all map markers
@@ -125,7 +139,7 @@ resetRestaurants = (restaurants) => {
  * Create all restaurants HTML and add them to the webpage.
  */
 fillRestaurantsHTML = (restaurants = self.restaurants) => {
-  const ul = document.getElementById('restaurants-list');
+  const ul = document.getElementsByClassName('restaurants-list')[0];
   restaurants.forEach(restaurant => {
     ul.append(createRestaurantHTML(restaurant));
   });
@@ -141,18 +155,22 @@ createRestaurantHTML = (restaurant) => {
   const image = document.createElement('img');
   image.className = 'restaurant-img';
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.setAttribute('alt', restaurant.alt);
   li.append(image);
 
   const name = document.createElement('h1');
   name.innerHTML = restaurant.name;
+  name.setAttribute('tabindex', '0');
   li.append(name);
 
   const neighborhood = document.createElement('p');
   neighborhood.innerHTML = restaurant.neighborhood;
+  neighborhood.className = 'restaurant-neighborhood';
   li.append(neighborhood);
 
   const address = document.createElement('p');
   address.innerHTML = restaurant.address;
+  address.className = 'restaurant-address';
   li.append(address);
 
   const more = document.createElement('a');

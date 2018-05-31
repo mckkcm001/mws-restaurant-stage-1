@@ -1,4 +1,4 @@
-let restaurant;
+var restaurant;
 var map;
 
 /**
@@ -9,7 +9,7 @@ window.initMap = () => {
     if (error) { // Got an error!
       console.error(error);
     } else {
-      self.map = new google.maps.Map(document.getElementById('map'), {
+      map = new google.maps.Map(document.getElementsByClassName('map')[0], {
         zoom: 16,
         center: restaurant.latlng,
         scrollwheel: false
@@ -33,7 +33,7 @@ fetchRestaurantFromURL = (callback) => {
     error = 'No restaurant id in URL'
     callback(error, null);
   } else {
-    DBHelper.fetchRestaurantById(id, (error, restaurant) => {
+    DBHelper.fetchRestaurantByClassName(id, (error, restaurant) => {
       self.restaurant = restaurant;
       if (!restaurant) {
         console.error(error);
@@ -49,17 +49,19 @@ fetchRestaurantFromURL = (callback) => {
  * Create restaurant HTML and add it to the webpage
  */
 fillRestaurantHTML = (restaurant = self.restaurant) => {
-  const name = document.getElementById('restaurant-name');
+  const name = document.getElementsByClassName('restaurant-name')[0];
+  name.setAttribute('tabindex', '0');
   name.innerHTML = restaurant.name;
 
-  const address = document.getElementById('restaurant-address');
+  const address = document.getElementsByClassName('restaurant-address')[0];
   address.innerHTML = restaurant.address;
 
-  const image = document.getElementById('restaurant-img');
-  image.className = 'restaurant-img'
+  const image = document.getElementsByClassName('restaurant-img')[0];
+  image.className = 'restaurant-img rounded'
   image.src = DBHelper.imageUrlForRestaurant(restaurant);
+  image.setAttribute('alt', restaurant.name + ' restaurant');
 
-  const cuisine = document.getElementById('restaurant-cuisine');
+  const cuisine = document.getElementsByClassName('restaurant-cuisine')[0];
   cuisine.innerHTML = restaurant.cuisine_type;
 
   // fill operating hours
@@ -74,7 +76,7 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
  * Create restaurant operating hours HTML table and add it to the webpage.
  */
 fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => {
-  const hours = document.getElementById('restaurant-hours');
+  const hours = document.getElementsByClassName('restaurant-hours')[0];
   for (let key in operatingHours) {
     const row = document.createElement('tr');
 
@@ -94,9 +96,10 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
-  const container = document.getElementById('reviews-container');
+  const container = document.getElementsByClassName('reviews-container')[0];
   const title = document.createElement('h2');
   title.innerHTML = 'Reviews';
+  title.setAttribute('tabindex', '0');
   container.appendChild(title);
 
   if (!reviews) {
@@ -105,7 +108,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     container.appendChild(noReviews);
     return;
   }
-  const ul = document.getElementById('reviews-list');
+  const ul = document.getElementsByClassName('reviews-list')[0];
   reviews.forEach(review => {
     ul.appendChild(createReviewHTML(review));
   });
@@ -117,15 +120,19 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
  */
 createReviewHTML = (review) => {
   const li = document.createElement('li');
-  const name = document.createElement('p');
+  li.className = 'rounded'
+  const reviewHeader = document.createElement('div');
+  reviewHeader.className = 'reviews-header';
+  const name = document.createElement('h3');
   name.innerHTML = review.name;
-  li.appendChild(name);
-
-  const date = document.createElement('p');
+  reviewHeader.appendChild(name);
+  const date = document.createElement('h3');
   date.innerHTML = review.date;
-  li.appendChild(date);
+  reviewHeader.appendChild(date);
+  li.appendChild(reviewHeader);
 
-  const rating = document.createElement('p');
+  const rating = document.createElement('h3');
+  rating.className = 'rating';
   rating.innerHTML = `Rating: ${review.rating}`;
   li.appendChild(rating);
 
@@ -140,7 +147,7 @@ createReviewHTML = (review) => {
  * Add restaurant name to the breadcrumb navigation menu
  */
 fillBreadcrumb = (restaurant=self.restaurant) => {
-  const breadcrumb = document.getElementById('breadcrumb');
+  const breadcrumb = document.getElementsByClassName('breadcrumb')[0];
   const li = document.createElement('li');
   li.innerHTML = restaurant.name;
   breadcrumb.appendChild(li);
